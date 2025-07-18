@@ -13,7 +13,7 @@ class Calculator:
         """Initialize the calculator by connecting to the MCP server."""
         await self.mcp_client.connect()
         tools = await self.mcp_client.list_tools()
-        self.llm.bind_tools(tools)
+        self.llm.bind_tools(tools, self.mcp_client.mcp_session)
 
     async def close(self):
         """Close the MCP client connection."""
@@ -42,7 +42,7 @@ async def main():
 
     await calculator.init()
 
-
+    print("Adding 5 and 3:", await calculator.add(5, 3))
     await calculator.close()
     # Example usage
     # print("Adding 5 and 3:", await calculator.add(5, 3))
