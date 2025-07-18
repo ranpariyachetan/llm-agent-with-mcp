@@ -43,6 +43,10 @@ async def main():
     await calculator.init()
 
     print("Adding 5 and 3:", await calculator.add(5, 3))
+    print("Subtracting 5 from 10:", await calculator.subtract(10, 5))
+    print("Multiplying 4 and 6:", await calculator.multiply(4, 6))
+    print("Dividing 8 by 2:", await calculator.divide(8, 2))
+    
     await calculator.close()
     # Example usage
     # print("Adding 5 and 3:", await calculator.add(5, 3))
