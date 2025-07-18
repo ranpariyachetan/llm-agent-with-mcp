@@ -1,24 +1,33 @@
-import asyncio
 from mcp.client.session import ClientSession
-from mcp.client.stdio import stdio_client, StdioServerParameters
 from mcp.client.sse import sse_client
-async def main():
-    server_params = StdioServerParameters(
-        command="python",
-        args=["mcp-server.py"]
-    )
+from langchain_core.tools import StructuredTool
 
-    async with sse_client(url="http://127.0.0.1:8000/sse") as (read, write):
-        async with ClientSession(read, write) as session:
+class CalculatorMCPClient:
+    def __init__(self, server_url: str):
+        self.server_url = server_url
 
-            print("Connecting to MCP server...")
-            await session.initialize()
+    async def connect(self):
+        """Connect to the MCP server."""
+        self.client = sse_client(self.server_url)
+        read, write = await self.client.__aenter__()
+        self.session_context = ClientSession(read, write)
+        self.mcp_session = await self.session_context.__aenter__()
+        await self.mcp_session.initialize()
 
-            tools = await session.list_tools()
-            print("Available tools:")
-            for tool in tools.tools:
-                print(f"- {tool.name}: {tool.description}")
-            # print(tools.tools)
+    async def list_tools(self):
+        """List available tools on the MCP server."""
+        tools_response = await self.mcp_session.list_tools()
+        langchain_tools = []
+        for tool in tools_response.tools:
+            langchain_tools.append(StructuredTool(
+                name=tool.name,
+                description=tool.description,
+                func=lambda *args, **kwargs: self.session_context.call_tool(tool.name, args, kwargs),
+                args_schema=tool.inputSchema,
+            ))
+        return langchain_tools
 
-if __name__ == "__main__":
-    asyncio.run(main())
+    async def disconnect(self):
+        """Close the MCP session."""
+        await self.session_context.__aexit__(None, None, None)
+        await self.client.__aexit__(None, None, None)
