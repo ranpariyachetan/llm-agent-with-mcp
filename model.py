@@ -24,6 +24,10 @@ class LLM:
             model_name=os.getenv("OPENAI_MODEL", "gpt-3.5-turbo"),
         )
 
+    def bind_tools(self, tools):
+        """Bind tools to the model."""
+        self.model.bind_tools(tools)
+        
     async def get_answer(self, question: str) -> str:
         """Get the answer to a question using the OpenAI model."""
         self.messages.append({"role": "user", "content": question})
