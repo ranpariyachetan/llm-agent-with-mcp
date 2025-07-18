@@ -10,7 +10,7 @@ class LLM:
     def __init__(self):
         load_dotenv()
         self.model = self.init_model()
-        system_message = SystemMessage(
+        self.system_message = SystemMessage(
             content="""You are a helpful math assistant
             You can perform addition, subtraction, multiplicatin and division calculations.
             You are given tools to perform calculations. You must use these tools to perform these 4 math operations.
@@ -19,7 +19,7 @@ class LLM:
             If the user asks for a calculation that is not supported, politely inform them that you cannot perform that calculation.
             """
         )
-        self.messages = [system_message]
+
 
     def init_model(self):
         """Initialize the OpenAI model."""
@@ -34,8 +34,9 @@ class LLM:
 
     async def get_answer(self, question: str) -> str:
         """Get the answer to a question using the OpenAI model."""
-        self.messages.append({"role": "user", "content": question})
-        response = self.model.invoke(self.messages)
+        messages = [self.system_message]
+        messages.append({"role": "user", "content": question})
+        response = self.model.invoke(messages)
 
         tool_messages = []
         if response.tool_calls:
@@ -50,8 +51,8 @@ class LLM:
 
                 tool_messages.append(tool_message)
 
-        self.messages = self.messages + [response] + tool_messages
-
-        answer = self.model.invoke(self.messages)
+        messages.append(response)
+        messages.extend(tool_messages)
+        answer = self.model.invoke(messages)
 
         return answer.content
