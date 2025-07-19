@@ -2,7 +2,6 @@ import os
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain.schema import SystemMessage
-from langchain_core.messages import ToolMessage
 
 class LLM:
     """A class to handle the initialization of the OpenAI model."""
@@ -20,7 +19,6 @@ class LLM:
             """
         )
 
-
     def init_model(self):
         """Initialize the OpenAI model."""
         return ChatOpenAI(
@@ -32,27 +30,10 @@ class LLM:
         self.model = self.model.bind_tools(tools)
         self.mcp_session = mcp_session
 
-    async def get_answer(self, question: str) -> str:
-        """Get the answer to a question using the OpenAI model."""
+    def start_chat(self, question: str):
+        """Start a chat with the model."""
         messages = [self.system_message]
         messages.append({"role": "user", "content": question})
         response = self.model.invoke(messages)
 
-        tool_messages = []
-        if response.tool_calls:
-            for tool_call in response.tool_calls:
-                tool_response = await self.mcp_session.call_tool(tool_call["name"], tool_call["args"])
-                result = tool_response.content[0].text
-                
-                tool_message = ToolMessage(
-                    content=result,
-                    tool_call_id=tool_call["id"],
-                )
-
-                tool_messages.append(tool_message)
-
-        messages.append(response)
-        messages.extend(tool_messages)
-        answer = self.model.invoke(messages)
-
-        return answer.content
+        return response
