@@ -19,6 +19,7 @@ class CalculatorMCPClient:
         tools_response = await self.mcp_session.list_tools()
         langchain_tools = []
         for tool in tools_response.tools:
+            print(f"Tool: {tool.name}, Description: {tool.description}")
             langchain_tools.append(StructuredTool(
                 name=tool.name,
                 description=tool.description,
