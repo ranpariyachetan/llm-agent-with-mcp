@@ -20,6 +20,6 @@ LLM wrapper creates and instance of OpenAIChat model, provides system message wi
 
 How to run?
 -----------
-```
+```sh
 python mcp_server.py & python calculator.py
 ```
